@@ -1,0 +1,79 @@
+#include <iostream>
+#include <vector>
+#include <string>
+using namespace std;
+
+vector<int> countBeesBetweenFlowers(const string &s, const vector<int> &startIndex, const vector<int> &endIndex) {
+    int n = s.size();
+    vector<int> prefixBee(n + 1, 0), nearestLeftFlower(n, -1), nearestRightFlower(n, -1);
+
+    // Build prefix sum array for counting bees
+    for (int i = 0; i < n; ++i) {
+        prefixBee[i + 1] = prefixBee[i] + (s[i] == '*' ? 1 : 0);
+    }
+
+    // Build nearest left flower array
+    int lastLeftFlower = -1;
+    for (int i = 0; i < n; ++i) {
+        if (s[i] == '|') {
+            lastLeftFlower = i;
+        }
+        nearestLeftFlower[i] = lastLeftFlower;
+    }
+
+    // Build nearest right flower array
+    int lastRightFlower = -1;
+    for (int i = n - 1; i >= 0; --i) {
+        if (s[i] == '|') {
+            lastRightFlower = i;
+        }
+        nearestRightFlower[i] = lastRightFlower;
+    }
+
+    vector<int> result;
+    for (size_t i = 0; i < startIndex.size(); ++i) {
+        int start = startIndex[i] - 1; // Convert to 0-indexed
+        int end = endIndex[i] - 1;     // Convert to 0-indexed
+
+        int leftFlower = nearestRightFlower[start];
+        int rightFlower = nearestLeftFlower[end];
+
+        if (leftFlower != -1 && rightFlower != -1 && leftFlower < rightFlower) {
+            // Count bees between the two flowers
+            result.push_back(prefixBee[rightFlower + 1] - prefixBee[leftFlower + 1]);
+        } else {
+            result.push_back(0);
+        }
+    }
+
+    return result;
+}
+
+int main() {
+    string s;
+    cout << "Enter the string (| and *): ";
+    cin >> s;
+
+    int n;
+    cout << "Enter the number of queries: ";
+    cin >> n;
+
+    vector<int> startIndex(n), endIndex(n);
+    cout << "Enter the start indices:\n";
+    for (int i = 0; i < n; ++i) {
+        cin >> startIndex[i];
+    }
+
+    cout << "Enter the end indices:\n";
+    for (int i = 0; i < n; ++i) {
+        cin >> endIndex[i];
+    }
+
+    vector<int> result = countBeesBetweenFlowers(s, startIndex, endIndex);
+    cout << "Results:\n";
+    for (int count : result) {
+        cout << count << endl;
+    }
+
+    return 0;
+}
